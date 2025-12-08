@@ -4,6 +4,8 @@ import 'materi_page.dart';
 import 'latihan_page.dart';
 import 'kuis_page.dart';
 import 'pembuat_page.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -100,7 +102,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  BottomNavigationBarItem _buildNavItem(IconData icon, String label, int index) {
+  BottomNavigationBarItem _buildNavItem(
+    IconData icon,
+    String label,
+    int index,
+  ) {
     return BottomNavigationBarItem(
       icon: Container(
         padding: const EdgeInsets.all(8),
@@ -120,6 +126,70 @@ class _HomePageState extends State<HomePage> {
 class HomeContent extends StatelessWidget {
   const HomeContent({super.key});
 
+  Widget _buildYoutubeVideos() {
+    final List<Map<String, String>> videos = [
+      {
+        "id": "xGq0BN7JkLU",
+        "url": "https://youtu.be/xGq0BN7JkLU?si=1w-8t58ymk-R96fX",
+      },
+      {
+        "id": "YTbGMGcyLPo",
+        "url": "https://youtu.be/YTbGMGcyLPo?si=-91_3-j2p7ucnCzK",
+      },
+      {
+        "id": "QZd_0ymSQeU",
+        "url": "https://youtu.be/QZd_0ymSQeU?si=U-hR6D0TIh1MUKbP",
+      },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 24),
+        Text(
+          "Video Pembelajaran",
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey.shade800,
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        SizedBox(
+          height: 140,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: videos.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              final video = videos[index];
+              final thumbnail =
+                  "https://img.youtube.com/vi/${video['id']}/hqdefault.jpg";
+
+              return GestureDetector(
+                onTap: () {
+                  launchUrl(
+                    Uri.parse(video["url"]!),
+                    mode: LaunchMode.externalApplication,
+                  );
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    width: 220,
+                    color: Colors.black12,
+                    child: Image.network(thumbnail, fit: BoxFit.cover),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -127,11 +197,7 @@ class HomeContent extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Colors.indigo.shade50,
-            Colors.white,
-            Colors.white,
-          ],
+          colors: [Colors.indigo.shade50, Colors.white, Colors.white],
         ),
       ),
       child: SafeArea(
@@ -162,6 +228,8 @@ class HomeContent extends StatelessWidget {
                     _buildDailyGoalCard(),
                     const SizedBox(height: 20),
                     _buildMotivationCard(),
+                    const SizedBox(height: 20),
+                    _buildYoutubeVideos(),
                     const SizedBox(height: 32),
                   ],
                 ),
@@ -657,10 +725,7 @@ class HomeContent extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             "13 of 20 materials completed",
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade600,
-            ),
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
           ),
         ],
       ),

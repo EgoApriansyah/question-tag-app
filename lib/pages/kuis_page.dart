@@ -22,6 +22,9 @@ class _KuisPageState extends State<KuisPage> with SingleTickerProviderStateMixin
   int _timeLeft = 15; // 15 detik per soal
   final int _initialTime = 15;
   bool _isAppInForeground = true;
+  
+  // Variable untuk mengontrol apakah kuis sudah dimulai
+  bool _quizStarted = false;
 
   List<Map<String, dynamic>> allQuestions = [
     {
@@ -169,10 +172,6 @@ class _KuisPageState extends State<KuisPage> with SingleTickerProviderStateMixin
     );
     
     _animationController.forward();
-    // Start timer setelah build pertama
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _startTimer();
-    });
   }
 
   @override
@@ -182,7 +181,7 @@ class _KuisPageState extends State<KuisPage> with SingleTickerProviderStateMixin
     if (state == AppLifecycleState.resumed) {
       _isAppInForeground = true;
       // Resume timer jika ada jawaban belum dipilih
-      if (selectedAnswer == null && mounted) {
+      if (selectedAnswer == null && mounted && _quizStarted) {
         _resumeTimer();
       }
     } else if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
@@ -300,8 +299,25 @@ class _KuisPageState extends State<KuisPage> with SingleTickerProviderStateMixin
     return Colors.red.shade500;
   }
 
+  // Method untuk memulai kuis
+  void _startQuiz() {
+    setState(() {
+      _quizStarted = true;
+    });
+    // Start timer setelah build pertama
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startTimer();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Jika kuis belum dimulai, tampilkan halaman start
+    if (!_quizStarted) {
+      return _buildStartScreen();
+    }
+    
+    // Jika sudah dimulai, tampilkan kuis seperti biasa
     var q = quizQuestions[currentIndex];
 
     return Scaffold(
@@ -354,6 +370,261 @@ class _KuisPageState extends State<KuisPage> with SingleTickerProviderStateMixin
           ),
         ),
       ),
+    );
+  }
+
+  // Halaman Start Screen
+  Widget _buildStartScreen() {
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.orange.shade50,
+              Colors.pink.shade50,
+              Colors.purple.shade50,
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 20),
+                
+                // Header dengan Icon
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.orange.shade400, Colors.orange.shade600],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.orange.withOpacity(0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.quiz_rounded,
+                        color: Colors.white,
+                        size: 40,
+                      ),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Title
+                const Text(
+                  "Kuis Tag Question",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                const SizedBox(height: 8),
+                
+                Text(
+                  "Test kemampuanmu! 🎯",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey.shade600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                const SizedBox(height: 32),
+                
+                // Illustration Card
+                Container(
+                  width: double.infinity,
+                  height: 240,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.orange.shade400, Colors.pink.shade400],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.orange.withOpacity(0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: Padding(
+                      padding: const EdgeInsets.all(0),
+                      child: Lottie.asset(
+                        "assets/lottie/kuis.json",
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.quiz_rounded,
+                                size: 80,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(height: 10),
+                              const Text(
+                                "🎯 Quiz Time",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 32),
+                
+                // Subtitle
+                const Text(
+                  "Test kemampuanmu dengan 25 pertanyaan!",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Info Cards
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      _buildInfoRow(
+                        Icons.timer_rounded,
+                        "15 detik per soal",
+                        Colors.orange,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildInfoRow(
+                        Icons.quiz_rounded,
+                        "25 pertanyaan",
+                        Colors.purple,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildInfoRow(
+                        Icons.star_rounded,
+                        "Kumpulkan poin maksimal",
+                        Colors.amber,
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 32),
+                
+                // Start Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _startQuiz,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      backgroundColor: Colors.orange.shade500,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 5,
+                      shadowColor: Colors.orange.withOpacity(0.5),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.play_arrow_rounded, size: 28),
+                        SizedBox(width: 8),
+                        Text(
+                          "Mulai Kuis",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Helper widget untuk info row
+  Widget _buildInfoRow(IconData icon, String text, Color color) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            icon,
+            color: color,
+            size: 24,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -1090,11 +1361,11 @@ class _KuisPageState extends State<KuisPage> with SingleTickerProviderStateMixin
                         currentIndex = 0;
                         score = 0;
                         selectedAnswer = null;
+                        _quizStarted = false;
                         quizQuestions.shuffle();
                         _animationController.reset();
                         _animationController.forward();
                       });
-                      _startTimer();
                     },
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),

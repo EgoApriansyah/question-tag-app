@@ -6,7 +6,6 @@ import 'kuis_page.dart';
 import 'pembuat_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -130,14 +129,18 @@ class HomeContent extends StatelessWidget {
     final List<Map<String, String>> videos = [
       {
         "id": "xGq0BN7JkLU",
+        "title": "BELAJAR QUESTION TAGS",
         "url": "https://youtu.be/xGq0BN7JkLU?si=1w-8t58ymk-R96fX",
       },
       {
         "id": "YTbGMGcyLPo",
+        "title": "Tag Questions – English Grammar Lessons",
         "url": "https://youtu.be/YTbGMGcyLPo?si=-91_3-j2p7ucnCzK",
       },
       {
         "id": "QZd_0ymSQeU",
+        "title":
+            "Materi QUESTION TAG (Grammar) - Pembahasan Soal Tes Bahasa Inggris USM PKN STAN",
         "url": "https://youtu.be/QZd_0ymSQeU?si=U-hR6D0TIh1MUKbP",
       },
     ];
@@ -157,7 +160,7 @@ class HomeContent extends StatelessWidget {
         const SizedBox(height: 14),
 
         SizedBox(
-          height: 140,
+          height: 200,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: videos.length,
@@ -174,12 +177,79 @@ class HomeContent extends StatelessWidget {
                     mode: LaunchMode.externalApplication,
                   );
                 },
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    width: 220,
-                    color: Colors.black12,
-                    child: Image.network(thumbnail, fit: BoxFit.cover),
+                child: SizedBox(
+                  width: 230,
+                  child: Card(
+                    elevation: 3,
+                    color: Colors.white,
+                    shadowColor: Colors.black26,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Thumbnail video
+                        ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(16),
+                            topRight: Radius.circular(16),
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // Thumbnail
+                              Image.network(
+                                thumbnail,
+                                width: double.infinity,
+                                height: 130,
+                                fit: BoxFit.cover,
+                              ),
+
+                              // Overlay redup (hitam transparan)
+                              Container(
+                                width: double.infinity,
+                                height: 130,
+                                color: Colors.black.withOpacity(0.3), // redup
+                              ),
+
+                              // Icon Play
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white70,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.play_arrow_rounded,
+                                  color: Colors.red,
+                                  size: 32,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Judul video
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 12,
+                            right: 12,
+                            top: 10,
+                          ),
+                          child: Text(
+                            video["title"]!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -228,7 +298,7 @@ class HomeContent extends StatelessWidget {
                     _buildDailyGoalCard(),
                     const SizedBox(height: 20),
                     _buildMotivationCard(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 0),
                     _buildYoutubeVideos(),
                     const SizedBox(height: 32),
                   ],

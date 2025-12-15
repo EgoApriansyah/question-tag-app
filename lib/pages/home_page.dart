@@ -33,16 +33,15 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        if (_selectedIndex != 0) {
+    return PopScope(
+      canPop: _selectedIndex == 0,
+      onPopInvoked: (didPop) {
+        if (!didPop && _selectedIndex != 0) {
           setState(() {
             _selectedIndex = 0;
           });
           _pageController.jumpToPage(0);
-          return false;
         }
-        return true;
       },
       child: Scaffold(
         body: PageView(
@@ -58,7 +57,7 @@ class _HomePageState extends State<HomePage> {
             MateriPage(),
             LatihanPage(),
             KuisPage(),
-            WordWondersGamePage(),
+            WordScrambleGame(),
           ],
         ),
         floatingActionButton: FloatingActionButton(
@@ -75,7 +74,7 @@ class _HomePageState extends State<HomePage> {
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 30,
                 offset: const Offset(0, -10),
               ),
@@ -103,7 +102,7 @@ class _HomePageState extends State<HomePage> {
                 _buildNavItem(Icons.book_rounded, 'Materi', 1),
                 _buildNavItem(Icons.edit_note_rounded, 'Latihan', 2),
                 _buildNavItem(Icons.quiz_rounded, 'Kuis', 3),
-                _buildNavItem(Icons.person_rounded, 'Pembuat', 4),
+                _buildNavItem(Icons.person_rounded, 'Game', 4),
               ],
             ),
           ),
@@ -169,7 +168,6 @@ class HomeContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-
         SizedBox(
           height: 200,
           child: ListView.separated(
@@ -182,11 +180,14 @@ class HomeContent extends StatelessWidget {
                   "https://img.youtube.com/vi/${video['id']}/hqdefault.jpg";
 
               return GestureDetector(
-                onTap: () {
-                  launchUrl(
-                    Uri.parse(video["url"]!),
-                    mode: LaunchMode.externalApplication,
-                  );
+                onTap: () async {
+                  final uri = Uri.parse(video["url"]!);
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(
+                      uri,
+                      mode: LaunchMode.externalApplication,
+                    );
+                  }
                 },
                 child: SizedBox(
                   width: 230,
@@ -200,7 +201,6 @@ class HomeContent extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Thumbnail video
                         ClipRRect(
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(16),
@@ -209,25 +209,32 @@ class HomeContent extends StatelessWidget {
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
-                              // Thumbnail
                               Image.network(
                                 thumbnail,
                                 width: double.infinity,
                                 height: 130,
                                 fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: double.infinity,
+                                    height: 130,
+                                    color: Colors.grey.shade300,
+                                    child: Icon(
+                                      Icons.video_library,
+                                      size: 48,
+                                      color: Colors.grey.shade500,
+                                    ),
+                                  );
+                                },
                               ),
-
-                              // Overlay redup (hitam transparan)
                               Container(
                                 width: double.infinity,
                                 height: 130,
-                                color: Colors.black.withOpacity(0.3), // redup
+                                color: Colors.black.withValues(alpha: 0.3),
                               ),
-
-                              // Icon Play
                               Container(
                                 padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: Colors.white70,
                                   shape: BoxShape.circle,
                                 ),
@@ -240,8 +247,6 @@ class HomeContent extends StatelessWidget {
                             ],
                           ),
                         ),
-
-                        // Judul video
                         Padding(
                           padding: const EdgeInsets.only(
                             left: 12,
@@ -309,7 +314,6 @@ class HomeContent extends StatelessWidget {
                     _buildDailyGoalCard(),
                     const SizedBox(height: 20),
                     _buildMotivationCard(),
-                    const SizedBox(height: 0),
                     _buildYoutubeVideos(),
                     const SizedBox(height: 32),
                   ],
@@ -357,7 +361,7 @@ class HomeContent extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.indigo.withOpacity(0.15),
+                  color: Colors.indigo.withValues(alpha: 0.15),
                   blurRadius: 15,
                   offset: const Offset(0, 4),
                 ),
@@ -387,7 +391,7 @@ class HomeContent extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.indigo.withOpacity(0.4),
+            color: Colors.indigo.withValues(alpha: 0.4),
             blurRadius: 25,
             offset: const Offset(0, 12),
           ),
@@ -407,7 +411,7 @@ class HomeContent extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.25),
+                    color: Colors.white.withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text(
@@ -472,7 +476,7 @@ class HomeContent extends StatelessWidget {
       child: Icon(
         Icons.menu_book_rounded,
         size: 80,
-        color: Colors.white.withOpacity(0.8),
+        color: Colors.white.withValues(alpha: 0.8),
       ),
     );
   }
@@ -527,7 +531,7 @@ class HomeContent extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: gradient[0].withOpacity(0.3),
+            color: gradient[0].withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -550,7 +554,7 @@ class HomeContent extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 11,
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -635,7 +639,7 @@ class HomeContent extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: gradient[0].withOpacity(0.4),
+              color: gradient[0].withValues(alpha: 0.4),
               blurRadius: 12,
               offset: const Offset(0, 6),
             ),
@@ -648,7 +652,7 @@ class HomeContent extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: Colors.white, size: 28),
@@ -669,7 +673,7 @@ class HomeContent extends StatelessWidget {
                   subtitle,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                   ),
                 ),
               ],
@@ -703,7 +707,7 @@ class HomeContent extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: gradient[0].withOpacity(0.4),
+              color: gradient[0].withValues(alpha: 0.4),
               blurRadius: 12,
               offset: const Offset(0, 6),
             ),
@@ -714,7 +718,7 @@ class HomeContent extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(icon, color: Colors.white, size: 32),
@@ -737,7 +741,7 @@ class HomeContent extends StatelessWidget {
                     subtitle,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
                 ],
@@ -745,7 +749,7 @@ class HomeContent extends StatelessWidget {
             ),
             Icon(
               Icons.arrow_forward_ios_rounded,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               size: 20,
             ),
           ],
@@ -763,7 +767,7 @@ class HomeContent extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.08),
+            color: Colors.grey.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -825,7 +829,7 @@ class HomeContent extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.teal.withOpacity(0.3),
+            color: Colors.teal.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -836,7 +840,7 @@ class HomeContent extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.25),
+              color: Colors.white.withValues(alpha: 0.25),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
@@ -863,7 +867,7 @@ class HomeContent extends StatelessWidget {
                   "Pay attention to auxiliary verbs to form correct tag questions!",
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.white.withOpacity(0.95),
+                    color: Colors.white.withValues(alpha: 0.95),
                     height: 1.3,
                   ),
                 ),
